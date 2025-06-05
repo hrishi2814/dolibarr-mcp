@@ -1,6 +1,6 @@
 import gradio as gr
 import requests
-from typing import Dict, List, Optional
+from typing import Dict, List, Any, Optional
 
 class DolibarrAPI:
     base_url = "http://localhost/dolibarr/api/index.php"
