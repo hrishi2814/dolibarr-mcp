@@ -61,7 +61,10 @@ def dolibarr_interface(method: str, endpoint : str, api_key = "OKgV53jdbT1p1tKuZ
     To orchestrate the API call from start to finish based on simple string and dictionary inputs
 
     Args:
-
+        method (str): http method type ( GET, POST, PUT, DELETE,etc)
+        endpoint (str): api endpoint, basically which api to call (/invoices, /thirdparties,/products,etc)
+        api_key : dolibarr api key
+        payload (dict): payload in json to send as request body - contains data/params to be passed to the api
     """
     
     api = DolibarrAPI(api_key)
@@ -81,25 +84,37 @@ def dolibarr_interface(method: str, endpoint : str, api_key = "OKgV53jdbT1p1tKuZ
     return json.dumps(result,indent=2)
 
 # ## Gradio interface
-# demo = gr.Interface(
-#     fn=dolibarr_interface,
-
-# )
-
-#trying basic calling of api, lets see
-# list_result = dolibarr_interface(method='GET', endpoint='/thirdparties')
-# print(list_result)
-
-# creating a product
-new_product_data = {
-    "ref": "PROD-007",
-    "label": "New AI-Powered Gadget",
-    "price": "199.99",
-    "tva_tx": "20.0"
-}
-create_result = dolibarr_interface(
-    method='POST',
-    endpoint='/products',
-    payload=new_product_data
+demo = gr.Interface(
+    fn=dolibarr_interface,
+    inputs=[
+        gr.Dropdown(["GET","PUT","POST","DELETE"]),
+        gr.Dropdown(["/thirdparties","/invoices","/products"]),
+        gr.Textbox(label="API key", value="OKgV53jdbT1p1tKuZrB05eK9z0p9I2YX"),
+        gr.Textbox(label="Payload")
+    ],
+    outputs=gr.Textbox(label="ze result"),
+    title="Dolibarr AI Agent/Personal ERP Assistant",
+    description="Interact with your dollybaby with ai agents and call the shots by typing in english, no more data entry(stupid(sick))"
 )
-print(create_result)
+if __name__=='__main__':
+    demo.launch(mcp_server=True)
+
+
+#----- basic api calling ----
+# #trying basic calling of api, lets see
+# # list_result = dolibarr_interface(method='GET', endpoint='/thirdparties')
+# # print(list_result)
+
+# # creating a product
+# new_product_data = {
+#     "ref": "PROD-007",
+#     "label": "New AI-Powered Gadget",
+#     "price": "199.99",
+#     "tva_tx": "20.0"
+# }
+# create_result = dolibarr_interface(
+#     method='POST',
+#     endpoint='/products',
+#     payload=new_product_data
+# )
+# print(create_result)
