@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class DolibarrAPI:
-    base_url = "http://localhost/dolibarr/api/index.php"
+    base_url = "https://valiant-trust-production.up.railway.app/api/index.php"
     
     def __init__(self, api_key: str):
         """
@@ -37,7 +37,7 @@ class DolibarrAPI:
             params (Optional[dict]) :  dictionary of params to be sent with this request (for GET)
         """
         
-        base_url = "http://localhost/dolibarr/api/index.php"
+        base_url = "https://valiant-trust-production.up.railway.app/api/index.php"
         url = f"{base_url}{endpoint}"
         
         try:
@@ -105,12 +105,35 @@ def dolibarr_interface(method: str, endpoint: str, api_key="OKgV53jdbT1p1tKuZrB0
         else:
             return json.dumps({"error": f"Invalid HTTP method '{method}' selected."}, indent=2)
         
-        return json.dumps(result, indent=2)
+        cleaned = clean_json_response(result)
+        return json.dumps(cleaned, indent=2)
     
     except Exception as e:
         logger.error(f"Unexpected error in dolibarr_interface: {e}")
         return json.dumps({"error": f"Unexpected error: {str(e)}"}, indent=2)
 
+def clean_json_response(data: Any) -> Any:
+    """
+    Recursively clean JSON response by removing null values, empty strings, and empty collections.
+    
+    Args:
+        data: The data to clean (can be dict, list, or primitive type)
+    
+    Returns:
+        Cleaned data with null values and empty collections removed
+    """
+    if isinstance(data, dict):
+        return {
+            k: clean_json_response(v)
+            for k, v in data.items()
+            if v is not None and v != "" and clean_json_response(v) is not None
+        }
+    elif isinstance(data, list):
+        cleaned = [clean_json_response(item) for item in data]
+        return [item for item in cleaned if item is not None and item != ""]
+    else:
+        return data
+    
 # Create the Gradio interface with better error handling
 def create_interface():
     """Create and return the Gradio interface"""
@@ -144,10 +167,7 @@ def create_interface():
         ),
         title="Dolibarr AI Agent/Personal ERP Assistant",
         description="Interact with your Dolibarr ERP system through API calls. Select method, endpoint, and provide JSON payload for POST/PUT requests.",
-        examples=[
-            ["GET", "/thirdparties", "OKgV53jdbT1p1tKuZrB05eK9z0p9I2YX", ""],
-            ["POST", "/products", "OKgV53jdbT1p1tKuZrB05eK9z0p9I2YX", '{"ref": "PROD-007", "label": "New AI-Powered Gadget", "price": "199.99", "tva_tx": "20.0"}']
-        ]
+        
     )
     
     return demo
